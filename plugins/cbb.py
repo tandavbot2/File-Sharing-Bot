@@ -3,7 +3,6 @@ from bot import Bot
 from config import ADMINS, OWNER_ID, AUTO_DELETE_ENABLED
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram import filters
-from pyrogram.types import Message
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):

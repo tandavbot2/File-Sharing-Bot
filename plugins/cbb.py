@@ -4,6 +4,8 @@ from bot import Bot
 from config import OWNER_ID, ADMINS
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import FloodWait
+from pyrogram import filters
+
 
 AUTO_DELETE_ENABLED = True  # Default state
 

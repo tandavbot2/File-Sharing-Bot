@@ -1,5 +1,3 @@
-#(©)Codexbotz
-
 import asyncio
 from pyrogram import filters, Client
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
@@ -8,6 +6,8 @@ from pyrogram.errors import FloodWait
 from bot import Bot
 from config import ADMINS, CHANNEL_ID, DISABLE_CHANNEL_BUTTON
 from helper_func import encode
+
+AUTO_DELETE_TIME = 300  # Time in seconds (e.g., 300 seconds = 5 minutes)
 
 @Bot.on_message(filters.private & filters.user(ADMINS) & ~filters.command(['start','users','broadcast','batch','genlink','stats']))
 async def channel_post(client: Client, message: Message):
@@ -21,6 +21,7 @@ async def channel_post(client: Client, message: Message):
         print(e)
         await reply_text.edit_text("Something went Wrong..!")
         return
+
     converted_id = post_message.id * abs(client.db_channel.id)
     string = f"get-{converted_id}"
     base64_string = await encode(string)
@@ -32,6 +33,14 @@ async def channel_post(client: Client, message: Message):
 
     if not DISABLE_CHANNEL_BUTTON:
         await post_message.edit_reply_markup(reply_markup)
+
+    # Schedule the deletion of the message after a specified duration
+    await asyncio.sleep(AUTO_DELETE_TIME)
+    try:
+        await post_message.delete()
+        await reply_text.delete()
+    except Exception as e:
+        print(f"Failed to delete message: {e}")
 
 @Bot.on_message(filters.channel & filters.incoming & filters.chat(CHANNEL_ID))
 async def new_post(client: Client, message: Message):

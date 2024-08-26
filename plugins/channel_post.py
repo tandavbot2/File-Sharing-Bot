@@ -1,3 +1,4 @@
+# channel_post.py
 import asyncio
 from pyrogram import filters, Client
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
@@ -34,17 +35,21 @@ async def channel_post(client: Client, message: Message):
     if not DISABLE_CHANNEL_BUTTON:
         await post_message.edit_reply_markup(reply_markup)
 
+    # Send notification message
+    notification_message = "Please forward your files. These files will be automatically deleted after 5 minutes."
+    await message.reply(notification_message)
+
     # Schedule the deletion of the message after a specified duration
-    await asyncio.sleep(AUTO_DELETE_TIME)
-    try:
-        await post_message.delete()
-        await reply_text.delete()
-    except Exception as e:
-        print(f"Failed to delete message: {e}")
+    if AUTO_DELETE_ENABLED:
+        await asyncio.sleep(AUTO_DELETE_TIME)
+        try:
+            await post_message.delete()
+            await reply_text.delete()
+        except Exception as e:
+            print(f"Failed to delete message: {e}")
 
 @Bot.on_message(filters.channel & filters.incoming & filters.chat(CHANNEL_ID))
 async def new_post(client: Client, message: Message):
-
     if DISABLE_CHANNEL_BUTTON:
         return
 

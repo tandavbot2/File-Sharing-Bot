@@ -1,12 +1,23 @@
 from pyrogram import __version__
 from bot import Bot
-from config import OWNER_ID
+from config import OWNER_ID, AUTO_DELETE_ENABLED
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
     if data == "about":
-        # Your existing implementation
+        await query.message.edit_text(
+            text=f"<b>○ Creator : <a href='tg://user?id={OWNER_ID}'>This Person</a>\n○ Language : <code>Python3</code>\n○ Library : <a href='https://docs.pyrogram.org/'>Pyrogram asyncio {__version__}</a>\n○ Source Code : <a href='PRIVATE'>Click here</a>\n○ Channel : @TandavBots\n○ Support Group : @@TandavBot_Support</b>",
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton("🔒 Close", callback_data="close")
+                    ]
+                ]
+            )
+        )
     elif data == "close":
         await query.message.delete()
         try:
@@ -14,14 +25,20 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         except:
             pass
 
-@Bot.on_message(filters.private & filters.user(ADMINS) & filters.command('enable_auto_delete'))
-async def enable_auto_delete(client: Bot, message: Message):
-    # Ensure AUTO_DELETE_ENABLED is set to True
-    client.config.AUTO_DELETE_ENABLED = True
-    await message.reply("Auto-deletion feature enabled.")
-
-@Bot.on_message(filters.private & filters.user(ADMINS) & filters.command('disable_auto_delete'))
-async def disable_auto_delete(client: Bot, message: Message):
-    # Ensure AUTO_DELETE_ENABLED is set to False
-    client.config.AUTO_DELETE_ENABLED = False
-    await message.reply("Auto-deletion feature disabled.")
+@Bot.on_message(filters.private & filters.text)
+async def handle_auto_delete(client: Bot, message: Message):
+    if AUTO_DELETE_ENABLED:
+        # Send notification message with file deletion info
+        await message.reply_text(
+            "Your files will be automatically deleted in 10 minutes. Please make sure to download or forward them before the deletion occurs.",
+            quote=True
+        )
+        
+        # Schedule file deletion after 10 minutes (600 seconds)
+        await asyncio.sleep(600)
+        
+        # Attempt to delete the user's message
+        try:
+            await message.delete()
+        except:
+            pass
